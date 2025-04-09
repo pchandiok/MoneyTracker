@@ -1,0 +1,77 @@
+﻿@page "/bankaccount"
+@inject IUserService _user
+@inject IBankRepository _bankRepository
+
+<h3>BankAccount (UserId: @UserId)</h3>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="bank" method="post" OnValidSubmit="AddBank" FormName="Register">
+            <ValidationSummary class="text-danger" role="alert" />
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="bank.AccountNumber" class="form-control" placeholder="Bank Account Number" />
+                <label for="accountnumber">Bank Account</label>
+                <ValidationMessage For="() => bank.AccountNumber" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="bank.Name" class="form-control" placeholder="Bank Name" />
+                <label for="name">Bank Name</label>
+                <ValidationMessage For="() => bank.Name" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputText @bind-Value="bank.AccountType" class="form-control" placeholder="Account Type" />
+                <label for="type">Account Type</label>
+                <ValidationMessage For="() => bank.AccountType" class="text-danger" />
+            </div>
+            <div class="form-floating mb-3">
+                <InputNumber @bind-Value="bank.Balance" class="form-control" placeholder="Account Balance" />
+                <label for="balance">Account Type</label>
+                <ValidationMessage For="() => bank.Balance" class="text-danger" />
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Add</button>
+        </EditForm>
+    </div>
+</div>
+
+@if(successMessage != null)
+{
+    <p>@successMessage</p>
+}
+
+@if(errorMessage != null)
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+
+@code {
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    [SupplyParameterFromForm]
+    private Bank bank { get; set; } = new();
+
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        UserId = await _user.GetUserId();
+    }
+
+    private async Task AddBank(EditContext editContext)
+    {
+        try
+        {
+            @* bank.ApplicationUser.Id = UserId;
+            bank.ApplicationUserId = UserId; *@
+            await _bankRepository.Create(bank);
+            successMessage = "Bank Account Added Successfully";
+            errorMessage = null;
+        }
+        catch(Exception ex)
+        {
+            errorMessage = $"Error: {ex.Message}";
+            successMessage = null;
+        }
+    }
+}
